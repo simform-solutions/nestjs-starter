@@ -16,23 +16,27 @@ export class UserService {
   ) {}
 
   public async update(id: number, data: UserUpdateDto) {
-    const { email, firstName, lastName, profile, password } = data;
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
-      throw new HttpException('userNotFound', HttpStatus.NOT_FOUND);
+    try {
+      const { email, firstName, lastName, profile, password } = data;
+      const user = await this.userRepository.findOneBy({ id });
+      if (!user) {
+        throw new HttpException('userNotFound', HttpStatus.NOT_FOUND);
+      }
+      const result = await this.userRepository.update(
+        {
+          id,
+        },
+        {
+          email: email.trim(),
+          password: helpers.createHash(password),
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          profile,
+        },
+      );
+      return result.raw;
+    } catch (e) {
+      throw e;
     }
-    const result = await this.userRepository.update(
-      {
-        id,
-      },
-      {
-        email: email.trim(),
-        password: helpers.createHash(password),
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        profile,
-      },
-    );
-    return result.raw;
   }
 }

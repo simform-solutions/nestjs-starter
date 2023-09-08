@@ -23,7 +23,7 @@ export class PostService {
       post.author = user;
       return this.postRepository.save(post);
     } catch (e) {
-      throw new Error(e);
+      throw e;
     }
   }
 
@@ -36,7 +36,7 @@ export class PostService {
       const result = await this.postRepository.delete({ id });
       return result.raw;
     } catch (e) {
-      throw new Error(e);
+      throw e;
     }
   }
 
@@ -55,7 +55,7 @@ export class PostService {
         data: result,
       };
     } catch (e) {
-      throw new Error(e);
+      throw e;
     }
   }
 

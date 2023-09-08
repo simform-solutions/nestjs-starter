@@ -24,7 +24,7 @@ export class AuthService {
       }
       const match = helpers.match(user.password, password);
       if (!match) {
-        throw new HttpException('invalidPassword', HttpStatus.NOT_FOUND);
+        throw new HttpException('invalidPassword', HttpStatus.BAD_REQUEST);
       }
       const accessToken = this.jwt.generateToken({
         role: user.role,
@@ -35,7 +35,7 @@ export class AuthService {
         user,
       };
     } catch (e) {
-      throw new Error(e);
+      throw e;
     }
   }
 
@@ -62,7 +62,7 @@ export class AuthService {
         user: create,
       };
     } catch (e) {
-      throw new Error(e);
+      throw e;
     }
   }
 
