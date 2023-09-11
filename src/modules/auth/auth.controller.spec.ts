@@ -40,7 +40,7 @@ describe('AuthController', () => {
         }),
       ],
       controllers: [AuthController],
-      providers: [AuthService, JwtStrategy],
+      providers: [AuthService, JwtStrategy, ConfigService],
     }).compile();
 
     connection = await moduleRef.get(getDataSourceToken());
