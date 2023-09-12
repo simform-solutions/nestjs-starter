@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory, Reflector, HttpAdapterHost } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { HttpExceptionFilter, ResponseInterceptor } from './core/interceptors';
@@ -11,9 +11,14 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import * as Sentry from '@sentry/node';
+import '@sentry/tracing';
+import { SentryFilter } from './core/filters';
+import { ENV } from './core/enums';
 
 const baseUrl = '/api';
 const port = process.env.PORT || 3000;
+const nodeEnv = (process.env.NODE_ENV as ENV) || ENV.development;
 
 function configureSwagger(app): void {
   const config = new DocumentBuilder()
@@ -24,6 +29,15 @@ function configureSwagger(app): void {
   SwaggerModule.setup(baseUrl, app, document);
 }
 
+// initialize Sentry
+if ([ENV.staging, ENV.production].includes(nodeEnv)) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DNS,
+    tracesSampleRate: 1.0,
+    environment: nodeEnv,
+  });
+}
+
 async function bootstrap(): Promise<void> {
   const server = express();
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
@@ -31,6 +45,8 @@ async function bootstrap(): Promise<void> {
     bufferLogs: true,
     cors: true,
   });
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new SentryFilter(httpAdapter));
   const logger = app.get(Logger);
   const moduleRef = app.select(AppModule);
   const reflector = moduleRef.get(Reflector);

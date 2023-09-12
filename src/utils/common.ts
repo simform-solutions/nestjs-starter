@@ -1,6 +1,8 @@
-export const isDev = process.env.NODE_ENV === 'development' ? true : false;
+import { ENV } from '../core/enums';
 
-export const isTest = process.env.NODE_ENV === 'test' ? true : false;
+export const isDev = process.env.NODE_ENV === ENV.development ? true : false;
+
+export const isTest = process.env.NODE_ENV === ENV.test ? true : false;
 
 export const statusMessages = {
   200: 'OK',
